@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: trip-plan-agent
+    runtime: python
+    plan: free
+    region: singapore
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: TRIP_LLM_BASE_URL
+        value: https://dashscope.aliyuncs.com/compatible-mode/v1
+      - key: TRIP_LLM_MODEL
+        value: qwen-plus
+      - key: TRIP_LLM_API_KEY
+        sync: false
+      - key: TRIP_RATE_PER_MIN
+        value: "6"
+      - key: TRIP_DAILY_CAP
+        value: "300"

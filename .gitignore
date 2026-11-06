@@ -1,0 +1,31 @@
+# 环境与密钥
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# 运行产物
+*.log
+_out*.txt
+_dbg*.txt
+_llm_*.txt
+_pytest.txt
+_api_test.txt
+_fix_data.txt
+_app.log
+
+# 本地调试脚本（含本机路径/临时探测，不入库）
+_*.py
+_*.txt
+
+# 编辑器
+.idea/
+.vscode/

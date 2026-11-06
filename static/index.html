@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>广州行程规划 Agent</title>
+<style>
+  :root{
+    --bg:#0f172a; --card:#1e293b; --line:#334155; --fg:#e2e8f0; --muted:#94a3b8;
+    --accent:#38bdf8; --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#0b1220,#0f172a 40%);color:var(--fg);
+       font:15px/1.6 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif;padding:24px 16px 60px}
+  .wrap{max-width:860px;margin:0 auto}
+  h1{font-size:22px;margin:0 0 6px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+  textarea{width:100%;min-height:84px;background:#0b1220;color:var(--fg);border:1px solid var(--line);
+           border-radius:10px;padding:12px;font:14px/1.6 inherit;resize:vertical}
+  textarea:focus{outline:2px solid rgba(56,189,248,.4);border-color:var(--accent)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+  .chip{background:#0b1220;border:1px dashed var(--line);color:var(--muted);border-radius:999px;
+        padding:5px 12px;font-size:12.5px;cursor:pointer}
+  .chip:hover{border-color:var(--accent);color:var(--fg)}
+  button.go{width:100%;padding:12px;border:0;border-radius:10px;background:var(--accent);color:#04121c;
+            font-weight:700;font-size:15px;cursor:pointer}
+  button.go:disabled{opacity:.5;cursor:not-allowed}
+  .meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;font-size:12.5px}
+  .tag{padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+  .tag.ok{border-color:rgba(34,197,94,.5);color:var(--ok)}
+  .tag.warn{border-color:rgba(245,158,11,.5);color:var(--warn)}
+  .tag.bad{border-color:rgba(239,68,68,.5);color:var(--bad)}
+  .day{margin:14px 0 6px;font-weight:700;font-size:15px}
+  .day small{color:var(--muted);font-weight:400;margin-left:8px}
+  .tl{border-left:2px solid var(--line);margin-left:6px;padding-left:14px}
+  .item{position:relative;padding:6px 0}
+  .item:before{content:"";position:absolute;left:-21px;top:13px;width:9px;height:9px;border-radius:50%;
+               background:var(--accent)}
+  .item.lunch:before{background:var(--warn)}
+  .t{color:var(--accent);font-variant-numeric:tabular-nums;font-size:13px}
+  .item.lunch .t{color:var(--warn)}
+  .n{font-weight:600}
+  .d{color:var(--muted);font-size:12.5px}
+  .budget{margin-top:14px;padding:12px;border-radius:10px;background:#0b1220;border:1px dashed var(--line);
+          font-size:13px;color:var(--muted)}
+  .err{color:var(--bad)}
+  .hint{color:var(--muted);font-size:12.5px;margin-top:8px}
+  pre{background:#0b1220;border:1px solid var(--line);border-radius:10px;padding:12px;overflow:auto;
+      font-size:12.5px;color:#cbd5e1}
+  .foot{color:#64748b;font-size:12px;text-align:center;margin-top:26px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>广州行程规划 Agent</h1>
+  <div class="sub">说清天数、预算、同行人、必去景点，它会自己查景点/天气/距离/预算，排完还会自检硬约束。</div>
+
+  <div class="panel">
+    <textarea id="q" placeholder="例如：广州 2 天，两个人，预算 1200，带父母不想走太多路，想去广州塔"></textarea>
+    <div class="chips" id="chips"></div>
+    <button class="go" id="go">生成行程</button>
+    <div class="hint">硬约束（代码校验）：天数/日期连续、开放时间、闭馆日、通行时间、单日 ≤4 个、步行强度、预算、必去。</div>
+  </div>
+
+  <div id="out"></div>
+  <div class="foot">演示项目 · 景点与时间为教学用近似数据，出行前请以官方信息为准</div>
+</div>
+
+<script>
+const EXAMPLES = [
+  "广州 2 天，两个人，预算 1200，带父母不想走太多路",
+  "广州 3 天，想去广州塔和省博，喜欢历史",
+  "广州 1 天，预算 200，晚上想拍夜景",
+  "广州 4 天，一个人，不想走太多路，想去陈家祠"
+];
+const chips = document.getElementById('chips');
+EXAMPLES.forEach(t=>{
+  const b = document.createElement('span');
+  b.className = 'chip'; b.textContent = t;
+  b.onclick = ()=>{ document.getElementById('q').value = t; };
+  chips.appendChild(b);
+});
+
+const out = document.getElementById('out');
+const go = document.getElementById('go');
+const q = document.getElementById('q');
+
+function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+go.onclick = async () => {
+  const text = q.value.trim();
+  if(!text){ q.focus(); return; }
+  go.disabled = true; go.textContent = '规划中…';
+  out.innerHTML = '';
+  try{
+    const r = await fetch('/api/plan', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({text})
+    });
+    const data = await r.json();
+    if(!r.ok || !data.ok){
+      out.innerHTML = '<div class="panel err">' + esc(data.error || ('HTTP '+r.status)) + '</div>';
+      return;
+    }
+    render(data);
+  }catch(e){
+    out.innerHTML = '<div class="panel err">请求失败：' + esc(e.message) + '</div>';
+  }finally{
+    go.disabled = false; go.textContent = '生成行程';
+  }
+};
+
+function render(d){
+  const v = d.validation || {};
+  const src = d.source === 'llm' ? ('模型规划 · ' + d.rounds + ' 轮自检') : '规则排程（未配置模型 key 时的兜底）';
+  const okTag = v.ok
+    ? '<span class="tag ok">硬约束全部通过</span>'
+    : '<span class="tag bad">' + (v.violations||[]).length + ' 项约束未满足</span>';
+  let html = '<div class="panel">';
+  html += '<div class="meta"><span class="tag">' + esc(src) + '</span>' + okTag +
+          '<span class="tag">' + d.req.days + ' 天 / ' + d.req.people + ' 人</span>';
+  if(d.req.budget) html += '<span class="tag">预算 ' + d.req.budget + ' 元/人</span>';
+  if(d.req.elderly) html += '<span class="tag">带老人</span>';
+  if(d.req.max_walk) html += '<span class="tag">步行强度 ≤' + d.req.max_walk + '</span>';
+  html += '</div>';
+
+  d.plan.days.forEach(day=>{
+    html += '<div class="day">' + esc(day.date) + ' ' + esc(day.weekday||'') +
+            (day.note ? '<small>' + esc(day.note) + '</small>' : '') + '</div>';
+    const rows = (day.items||[]).map(it=>({
+      start: it.start, end: it.end,
+      name: (d.pois[it.poi_id]||{}).name || it.poi_id,
+      dist: (d.pois[it.poi_id]||{}).district || '',
+      ticket: (d.pois[it.poi_id]||{}).ticket,
+      note: it.note || ''
+    }));
+    if(day.lunch) rows.push({start: day.lunch.split('–')[0], lunch: true, name:'午餐（自行安排）', dist:'预算已计入'});
+    rows.sort((a,b)=> (a.start||'').localeCompare(b.start||''));
+    html += '<div class="tl">';
+    rows.forEach(r=>{
+      html += '<div class="item' + (r.lunch?' lunch':'') + '">' +
+              '<div class="t">' + esc(r.start) + (r.end?'–'+esc(r.end):'') + '</div>' +
+              '<div class="n">' + esc(r.name) + (r.note?' <small style="color:var(--muted)">'+esc(r.note)+'</small>':'') + '</div>' +
+              '<div class="d">' + esc(r.dist) + (r.ticket!=null? ' · 门票 '+esc(r.ticket)+' 元':'') + '</div>' +
+              '</div>';
+    });
+    html += '</div>';
+  });
+
+  if(v.stats){
+    html += '<div class="budget">预计花费 <b>' + v.stats.total_cost + '</b> 元/人（' +
+            v.stats.days + ' 天 · ' + v.stats.items + ' 个景点，含餐饮与交通估算）</div>';
+  }
+  if(!v.ok){
+    html += '<div class="budget err">' + (v.violations||[]).map(x=> '[' + x.code + '] ' + esc(x.msg)).join('<br>') + '</div>';
+  }
+  html += '<details style="margin-top:12px"><summary style="cursor:pointer;color:var(--muted)">查看 Markdown</summary><pre>' +
+          esc(d.markdown) + '</pre></details>';
+  html += '</div>';
+  out.innerHTML = html;
+}
+
+q.addEventListener('keydown', e=>{ if(e.key==='Enter' && (e.ctrlKey||e.metaKey)) go.click(); });
+</script>
+</body>
+</html>
