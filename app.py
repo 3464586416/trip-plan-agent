@@ -11,7 +11,7 @@ import time
 from collections import deque
 
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 import planner
@@ -52,6 +52,12 @@ def _rate_ok(ip: str) -> bool:
 @app.get("/health")
 def health():
     return {"ok": True, "llm": bool(planner.API_KEY)}
+
+
+@app.get("/favicon.ico")
+def favicon():
+    # 页面里用的是内嵌 SVG 图标，这里给浏览器一个空响应，免得控制台报 404
+    return Response(status_code=204)
 
 
 @app.post("/api/plan")

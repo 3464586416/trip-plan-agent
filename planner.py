@@ -50,32 +50,127 @@ SYSTEM_PROMPT = """你是"广州行程规划师"，用工具查数据、排行�
 
 # ------------------------------------------------------------------ 需求解析
 
+_CN_DIGITS = {"一": 1, "二": 2, "两": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9}
+
+
+def _cn2num(tok: str) -> int:
+    """把"三""十""十二""二十五"这类中文数字转成 int，认不出就当 1。"""
+    if not tok:
+        return 1
+    if tok.isdigit():
+        return int(tok)
+    if tok == "十":
+        return 10
+    if "十" in tok:
+        a, _, b = tok.partition("十")
+        return (_CN_DIGITS.get(a, 1) if a else 1) * 10 + (_CN_DIGITS.get(b, 0) if b else 0)
+    return _CN_DIGITS.get(tok[-1], 1)
+
+
 def parse_request(text: str, today: date | None = None) -> dict:
     today = today or date.today()
     req = {"city": "广州", "days": 2, "people": 1, "budget": None, "start_date": None,
            "elderly": False, "max_walk": None, "indoor_pref": False,
            "must_visit": [], "interests": [], "raw": text}
 
-    m = re.search(r"(\d+)\s*天", text)
-    if m:
-        req["days"] = max(1, min(int(m.group(1)), 5))
-    m = re.search(r"(\d+\.?\d*)\s*(?:元|块|rmb|RMB)", text)
-    if m:
-        req["budget"] = float(m.group(1))
-    if req["budget"] is None:
-        m = re.search(r"预算\s*(\d+\.?\d*)", text)
-        if m:
-            req["budget"] = float(m.group(1))
-    CN_NUM = {"一": 1, "二": 2, "两": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8}
-    m = re.search(r"([一二两三四五六七八\d]+)\s*(?:个人|人)", text)
+    # ---------- 天数：3天 / 三天 / 1D / 2 day / 一周 / 1个星期 ----------
+    explicit = {"days": False, "budget": False, "people": False}
+    m = re.search(r"(\d+|[一二两三四五六七八九十]+)\s*(?:天|日|days|day|d|D)", text)
     if m:
         tok = m.group(1)
-        n = int(tok) if tok.isdigit() else CN_NUM.get(tok[-1], 1)
-        if "父母" not in text and "老人" not in text:
-            req["people"] = max(1, min(n, 8))
+        n = int(tok) if tok.isdigit() else _cn2num(tok)
+        req["days"] = max(1, min(n, 7))
+        explicit["days"] = True
+    else:
+        m = re.search(r"(\d+|[一二两三四五六七八九十]+|半)\s*(?:个)?\s*(?:星期|礼拜|周|w|W)", text)
+        if m:
+            tok = m.group(1)
+            n = 0.5 if tok == "半" else (int(tok) if tok.isdigit() else _cn2num(tok))
+            req["days"] = max(1, min(int(round(n * 7)), 7))
+            explicit["days"] = True
+        elif any(k in text for k in ("一日游", "当天往返", "当天来回")):
+            req["days"] = 1
+            explicit["days"] = True
+        elif ("个月" in text or "一个月" in text
+              or re.search(r"\d+\s*[mM](?![a-zA-Z])", text)):
+            req["days"] = 7
+            explicit["days"] = True
+            req["hint"] = "行程最多排 7 天，先按 7 天给你。"
+        elif "半天" in text or "半日" in text:
+            req["days"] = 1
+            explicit["days"] = True
+        elif "周末" in text and req["days"] == 2:
+            explicit["days"] = True
+
+    # ---------- 预算：1W / 3k / 1万 / 8000元 / 800块 / 预算 1500 / ¥2000 / 1RMB ----------
+    m = re.search(r"(?:预算|花费|费用|大概|大约|约|不超过|控制在|最多)?\s*"
+                  r"(\d+(?:\.\d+)?)\s*(万|w|W|k|K|千|元|块|¥|￥|rmb|RMB|Rmb)", text)
+    if m:
+        val = float(m.group(1))
+        unit = m.group(2).lower()
+        if unit in ("w", "万"):
+            val *= 10000
+        elif unit in ("k", "千"):
+            val *= 1000
+        req["budget"] = val
+        explicit["budget"] = True
+    else:
+        m = re.search(r"预算\s*(?:是|为|大概|约)?\s*(\d+(?:\.\d+)?)", text)
+        if m:
+            req["budget"] = float(m.group(1))
+            explicit["budget"] = True
+
+    # 前缀货币（¥1200 / $300）与英文 budget，以及"每人 500"这类裸数字
+    if req["budget"] is None:
+        m = re.search(r"[\u00a5\uffe5$]\s*(\d+(?:\.\d+)?)", text)
+        if m:
+            req["budget"] = float(m.group(1))
+            explicit["budget"] = True
+    if req["budget"] is None:
+        m = re.search(r"(?:budget|Budget|BUDGET)\s*[:=]?\s*(\d+(?:\.\d+)?)", text)
+        if m:
+            req["budget"] = float(m.group(1))
+            explicit["budget"] = True
+    if req["budget"] is None:
+        m = re.search(r"(?:每人|人均)\s*(?:大概|约)?\s*(\d+(?:\.\d+)?)", text)
+        if m:
+            req["budget"] = float(m.group(1))
+            explicit["budget"] = True
+            req["budget_per_person"] = True
+
+    # ---------- 人数：3人 / 三个人 / 2位 / 两大一小 ----------
+    m = re.search(r"([一二两三四五六七八九十\d]+)\s*大\s*([一二两三四五六七八九十\d]+)\s*小", text)
+    if m:
+        a = int(m.group(1)) if m.group(1).isdigit() else _cn2num(m.group(1))
+        b = int(m.group(2)) if m.group(2).isdigit() else _cn2num(m.group(2))
+        req["people"] = max(1, min(a + b, 8))
+        explicit["people"] = True
+    else:
+        m = re.search(r"([一二两三四五六七八九十\d]+)\s*(?:个)?\s*(?:人|位|口|成人|大人)", text)
+        if m:
+            tok = m.group(1)
+            n = int(tok) if tok.isdigit() else _cn2num(tok)
+            if "父母" not in text and "老人" not in text:
+                req["people"] = max(1, min(n, 8))
+                explicit["people"] = True
+
     if any(k in text for k in ("父母", "老人", "爸妈", "长辈", "爷爷", "奶奶")):
         req["elderly"] = True
         req["people"] = max(req["people"], 2)
+    # "每人/人均 800" 换算成整趟总预算
+    if req["budget"] and any(k in text for k in ("每人", "人均", "一个人")):
+        req["budget"] = req["budget"] * int(req["people"])
+    if req["budget"] is None:
+        for num in re.findall(r"(?<![\d.])(\d{3,6})(?![\d.])", text):
+            v = float(num)
+            if v >= 100 and v != req["days"] and v != req["people"]:
+                req["budget"] = v
+                explicit["budget"] = True
+                break
+    if req.get("budget_per_person") and req["budget"]:
+        req["budget"] = req["budget"] * int(req["people"])
+    req["explicit"] = explicit
+    req["assumed_days"] = not explicit["days"]
     if any(k in text for k in ("不想走", "少走", "走不动", "腿脚", "轻松")):
         req["max_walk"] = 1
     elif any(k in text for k in ("爬山", "徒步", "暴走", "运动量")):
@@ -100,6 +195,16 @@ def parse_request(text: str, today: date | None = None) -> dict:
     else:
         req["start_date"] = today.isoformat()
 
+    ask = []
+    if not explicit["days"]:
+        ask.append("打算玩几天？（说\"3 天\"就行）")
+    if req["budget"] is None:
+        ask.append("大概预算多少？人多的话给个总预算，我来均摊。")
+    if not req["must_visit"] and not req["interests"]:
+        ask.append("有特别想去的点吗？比如广州塔、省博，或\"想拍照\"\"带爸妈\"。")
+    req["ask"] = ask[:2]
+    if not explicit["days"] and req["days"] == 2:
+        req["hint"] = "你没写玩几天，我先按 2 天排；告诉我\"3 天\"这种就能改。"
     ALIASES = {"省博": "广东省博物馆", "省博物馆": "广东省博物馆", "小蛮腰": "广州塔",
                "塔": "广州塔", "沙面岛": "沙面", "粤博": "广东省博物馆", "中大": "中山大学"}
     for poi in tools.POIS:
@@ -388,9 +493,19 @@ def plan_with_rules(req: dict) -> dict:
 def plan_trip(text: str) -> dict:
     req = parse_request(text)
     llm = plan_with_llm(req) if API_KEY else None
-    if llm:
+    if llm and llm["validation"]["ok"]:
         out = {"req": req, "source": llm["source"], "rounds": llm["rounds"],
                "plan": llm["plan"], "validation": llm["validation"]}
+    elif llm:
+        # 模型 3 轮仍不达标：规则版若更靠谱就换掉，避免把违约方案给出去
+        plan = plan_with_rules(req)
+        v = constraints.validate(plan, req)
+        if v["ok"]:
+            out = {"req": req, "source": "rules(fallback)", "rounds": llm["rounds"],
+                   "plan": plan, "validation": v}
+        else:
+            out = {"req": req, "source": llm["source"], "rounds": llm["rounds"],
+                   "plan": llm["plan"], "validation": llm["validation"]}
     else:
         plan = plan_with_rules(req)
         out = {"req": req, "source": "rules", "rounds": 0, "plan": plan,

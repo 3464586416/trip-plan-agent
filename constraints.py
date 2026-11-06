@@ -142,12 +142,12 @@ def validate(plan: dict, req: dict) -> dict:
         if pid not in seen:
             bad("C10", "整体", "用户点名要去的 %s 没有安排" % tools.POI_BY_ID.get(pid, {}).get("name", pid))
 
-    # C8
+    # C8 预算按"整趟行程总预算"理解（全团合计）
     b = tools.budget_calc(plan, people=int(req.get("people", 1)))
-    if req.get("budget") and b["total"] > float(req["budget"]) * int(req.get("people", 1)):
-        bad("C8", "整体", "预算 %s 元（%s人），超了 %s 元" % (
-            round(b["total"]), req.get("people", 1),
-            round(b["total"] - float(req["budget"]) * int(req.get("people", 1)))))
+    if req.get("budget") and b["total"] > float(req["budget"]):
+        bad("C8", "整体", "预算 %s 元（%s人合计），实际 %s 元，超了 %s 元" % (
+            round(float(req["budget"])), req.get("people", 1), round(b["total"]),
+            round(b["total"] - float(req["budget"]))))
 
     plan["budget"] = b
     return {"ok": not v, "violations": v, "warnings": w,

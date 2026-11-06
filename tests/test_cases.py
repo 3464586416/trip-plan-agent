@@ -38,7 +38,12 @@ def test_days_parsed():
 
 # 2 天数上限保护（用户说 10 天也只排 5 天）
 def test_days_capped():
-    assert run("广州 10 天")["req"]["days"] == 5
+    assert run("广州 10 天")["req"]["days"] == 7
+
+
+# 3b "1周" 解析为 7 天
+def test_week_parsed():
+    assert run("广州1周")["req"]["days"] == 7
 
 
 # 3 中文人数解析
@@ -46,15 +51,21 @@ def test_people_chinese_number():
     assert run("广州 2 天，两个人")["req"]["people"] == 2
 
 
-# 4 预算解析（"每人预算 800"）
+# 4 预算解析（"每人预算 800" 两个人 → 合计 1600）
 def test_budget_per_person():
-    out = run("广州 2 天，每人预算 800")
-    assert out["req"]["budget"] == 800
+    out = run("广州 2 天，两个人，每人预算 800")
+    assert out["req"]["budget"] == 1600
 
 
 # 5 预算解析（"预算 1500" 无单位）
 def test_budget_without_unit():
     assert run("广州 3 天，预算 1500")["req"]["budget"] == 1500
+
+
+# 5b 单位写法：1W / 3k / 一万
+def test_budget_units():
+    assert run("广州1周，3人，预算1W")["req"]["budget"] == 10000
+    assert run("广州 1 天，预算 3k")["req"]["budget"] == 3000
 
 
 # 6 带父母 → 适老过滤 + 人数至少 2
@@ -137,8 +148,8 @@ def test_closed_day_avoided():
 
 # 16 总预算不超支（门票+餐饮+交通）
 def test_budget_not_exceeded():
-    out = run("广州 2 天，每人预算 300")
-    assert out["validation"]["stats"]["total_cost"] <= 300 or "C8" in codes(out)
+    out = run("广州 2 天，两个人，预算 1200")
+    assert out["validation"]["stats"]["total_cost"] <= 1200 or "C8" in codes(out)
 
 
 # 17 单日总时长不超过 10 小时
@@ -181,6 +192,7 @@ def test_markdown_shape():
 
 # 额外：整体校验在常规输入下必须通过
 def test_all_green_on_normal_input():
-    for text in ("广州 2 天", "广州 3 天，两个人，预算 1500", "广州 2 天，带父母不想走太多路"):
+    for text in ("广州 2 天", "广州 3 天，两个人，预算 1500", "广州1周，3人，预算1W，喜欢拍照",
+                 "广州 2 天，带父母不想走太多路"):
         out = run(text)
         assert out["validation"]["ok"], (text, codes(out))

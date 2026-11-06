@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%97%BA%3C/text%3E%3C/svg%3E" />
 <title>广州行程规划 Agent</title>
 <style>
   :root{
@@ -42,6 +43,10 @@
   .item.lunch .t{color:var(--warn)}
   .n{font-weight:600}
   .d{color:var(--muted);font-size:12.5px}
+  .ask{margin:10px 0 0;font-size:13px;color:#8b9bb4;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .chip{padding:4px 10px;border:1px solid var(--line);border-radius:999px;cursor:pointer;color:#cfe0ff}
+  .chip:hover{border-color:#3b82f6}
+  .hintline{margin-top:8px;font-size:12.5px;color:#f0b429}
   .budget{margin-top:14px;padding:12px;border-radius:10px;background:#0b1220;border:1px dashed var(--line);
           font-size:13px;color:var(--muted)}
   .err{color:var(--bad)}
@@ -57,7 +62,7 @@
   <div class="sub">说清天数、预算、同行人、必去景点，它会自己查景点/天气/距离/预算，排完还会自检硬约束。</div>
 
   <div class="panel">
-    <textarea id="q" placeholder="例如：广州 2 天，两个人，预算 1200，带父母不想走太多路，想去广州塔"></textarea>
+    <textarea id="q" placeholder="例如：广州 2 天，两个人，预算 1600（两人合计），带父母不想走太多路，想去广州塔"></textarea>
     <div class="chips" id="chips"></div>
     <button class="go" id="go">生成行程</button>
     <div class="hint">硬约束（代码校验）：天数/日期连续、开放时间、闭馆日、通行时间、单日 ≤4 个、步行强度、预算、必去。</div>
@@ -69,7 +74,7 @@
 
 <script>
 const EXAMPLES = [
-  "广州 2 天，两个人，预算 1200，带父母不想走太多路",
+  "广州 2 天，两个人，预算 1600（两人合计），带父母不想走太多路",
   "广州 3 天，想去广州塔和省博，喜欢历史",
   "广州 1 天，预算 200，晚上想拍夜景",
   "广州 4 天，一个人，不想走太多路，想去陈家祠"
@@ -113,17 +118,30 @@ go.onclick = async () => {
 
 function render(d){
   const v = d.validation || {};
-  const src = d.source === 'llm' ? ('模型规划 · ' + d.rounds + ' 轮自检') : '规则排程（未配置模型 key 时的兜底）';
+  const srcName = {'llm': '模型规划 · ' + d.rounds + ' 轮自检',
+                   'rules': '规则排程',
+                   'rules(fallback)': '模型没排好，已自动改用规则排程',
+                   'llm-partial': '模型方案仍有争议项'};
+  const src = srcName[d.source] || d.source;
   const okTag = v.ok
     ? '<span class="tag ok">硬约束全部通过</span>'
     : '<span class="tag bad">' + (v.violations||[]).length + ' 项约束未满足</span>';
   let html = '<div class="panel">';
   html += '<div class="meta"><span class="tag">' + esc(src) + '</span>' + okTag +
           '<span class="tag">' + d.req.days + ' 天 / ' + d.req.people + ' 人</span>';
-  if(d.req.budget) html += '<span class="tag">预算 ' + d.req.budget + ' 元/人</span>';
+  if(d.req.budget) html += '<span class="tag">预算 ' + d.req.budget + ' 元（合计）</span>';
   if(d.req.elderly) html += '<span class="tag">带老人</span>';
   if(d.req.max_walk) html += '<span class="tag">步行强度 ≤' + d.req.max_walk + '</span>';
   html += '</div>';
+  const asks = (d.req && d.req.ask) || [];
+  if(asks.length){
+    html += '<div class="ask">想排得更准，补一句就行：';
+    asks.forEach(function(a){ html += '<span class="chip">' + esc(a) + '</span>'; });
+    html += '</div>';
+  }
+  if(d.req && d.req.hint){
+    html += '<div class="hintline">' + esc(d.req.hint) + '</div>';
+  }
 
   d.plan.days.forEach(day=>{
     html += '<div class="day">' + esc(day.date) + ' ' + esc(day.weekday||'') +
@@ -149,7 +167,7 @@ function render(d){
   });
 
   if(v.stats){
-    html += '<div class="budget">预计花费 <b>' + v.stats.total_cost + '</b> 元/人（' +
+    html += '<div class="budget">预计花费 <b>' + v.stats.total_cost + '</b> 元（' + d.req.people + ' 人合计，人均 ' + Math.round(v.stats.total_cost/d.req.people) + ' 元）（' +
             v.stats.days + ' 天 · ' + v.stats.items + ' 个景点，含餐饮与交通估算）</div>';
   }
   if(!v.ok){
