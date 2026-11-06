@@ -12,10 +12,24 @@ import json
 import os
 import re
 import sys
+import threading
 from datetime import date, timedelta
 
 import constraints
 import tools
+
+_prog = threading.local()
+
+
+def _p(pct: int, stage: str) -> None:
+    """把当前阶段回报给调用方（Web 端用来画进度条）。"""
+    cb = getattr(_prog, "cb", None)
+    if cb:
+        try:
+            cb(int(pct), stage)
+        except Exception:
+            pass
+
 
 BASE_URL = os.getenv("TRIP_LLM_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1")
 MODEL = os.getenv("TRIP_LLM_MODEL", "qwen-plus")
@@ -344,6 +358,7 @@ def plan_with_llm(req: dict) -> dict | None:
     except Exception:
         return None
 
+    _p(12, "查询天气与候选景点")
     messages = [{"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": _requirement_block(req)}]
     rounds, steps = 0, 0
@@ -361,6 +376,7 @@ def plan_with_llm(req: dict) -> dict | None:
             print("[planner] 模型调用失败：%s" % str(exc)[:160])
             return None
         msg = resp.choices[0].message
+        _p(min(88, 15 + steps * 6), "模型规划第 %d 步" % steps)
         _dbg("step", steps, "round", rounds, "tools", [tc.function.name for tc in (msg.tool_calls or [])])
         messages.append({"role": "assistant", "content": msg.content or "",
                          "tool_calls": [tc.model_dump() for tc in (msg.tool_calls or [])] or None})
@@ -392,6 +408,7 @@ def plan_with_llm(req: dict) -> dict | None:
                     fix_mode = True
                     continue
                 rounds += 1
+                _p(78, "校验硬约束")
                 plan.setdefault("title", "广州 %d 日行程" % req["days"])
                 result = constraints.validate(plan, req)
                 last_result = (plan, result, rounds)
@@ -441,6 +458,7 @@ def plan_with_llm(req: dict) -> dict | None:
     _dbg("loop end", "rounds", rounds, "steps", steps, "last_result", bool(last_result))
     if last_result:
         plan, result, r = last_result
+        _p(88, "自动校正方案")
         fixed = _repair_plan(plan, req)
         if fixed:
             fixed["rounds"] = r
@@ -625,7 +643,16 @@ def plan_with_rules(req: dict) -> dict:
 
 # ------------------------------------------------------------------ 对外入口
 
-def plan_trip(text: str) -> dict:
+def plan_trip(text: str, progress=None) -> dict:
+    _prog.cb = progress
+    try:
+        return _plan_trip(text)
+    finally:
+        _prog.cb = None
+
+
+def _plan_trip(text: str) -> dict:
+    _p(6, "解析需求")
     req = parse_request(text)
     llm = plan_with_llm(req) if API_KEY else None
     if llm and llm["validation"]["ok"]:
@@ -642,9 +669,11 @@ def plan_trip(text: str) -> dict:
             out = {"req": req, "source": llm["source"], "rounds": llm["rounds"],
                    "plan": llm["plan"], "validation": llm["validation"]}
     else:
+        _p(35, "规则排程")
         plan = plan_with_rules(req)
         out = {"req": req, "source": "rules", "rounds": 0, "plan": plan,
                "validation": constraints.validate(plan, req)}
+    _p(94, "生成页面文案")
     out["markdown"] = tools.export_markdown(out["plan"])["markdown"]
     return out
 

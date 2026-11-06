@@ -7,7 +7,9 @@ from __future__ import annotations
 
 import json
 import os
+import threading
 import time
+import uuid
 from collections import deque
 
 from fastapi import FastAPI, Request
@@ -24,6 +26,8 @@ app = FastAPI(title="广州行程规划 Agent", docs_url=None, redoc_url=None)
 
 # 极简滑动窗口限流：公网免费档必须防别人刷爆 key
 _hits: dict[str, deque] = {}
+TASKS: dict[str, dict] = {}          # 异步任务：进度条靠它
+TASK_TTL = 900                       # 15 分钟没人取就丢掉
 _day = {"key": "", "n": 0}
 
 
@@ -103,6 +107,60 @@ def index():
 app.mount("/static", StaticFiles(directory=os.path.join(HERE, "static")), name="static")
 
 
+
+@app.post("/api/plan_async")
+async def plan_async(request: Request):
+    """提交后立刻返回 task_id，前端轮询进度，避免干等。"""
+    try:
+        body = await request.json()
+    except Exception:
+        return JSONResponse({"ok": False, "error": "请求体不是合法 JSON"}, status_code=400)
+    text = (body.get("text") or "").strip()
+    if not text:
+        return JSONResponse({"ok": False, "error": "先说说想去哪、玩几天"}, status_code=400)
+    if len(text) > 300:
+        return JSONResponse({"ok": False, "error": "描述太长了，300 字以内"}, status_code=413)
+    ip = (request.headers.get("x-forwarded-for") or "").split(",")[0].strip() or \
+        (request.client.host if request.client else "unknown")
+    if not _rate_ok(ip):
+        return JSONResponse({"ok": False, "error": "请求太频繁，歇一会儿再试"}, status_code=429)
+    if not _daily_ok():
+        return JSONResponse({"ok": False, "error": "今天的演示额度用完了，明天再来"}, status_code=429)
+
+    tid = uuid.uuid4().hex
+    TASKS[tid] = {"status": "running", "progress": 3, "stage": "开始", "t0": time.time()}
+
+    def _run():
+        try:
+            res = planner.plan_trip(text, progress=lambda p, s: TASKS[tid].update(progress=p, stage=s))
+            TASKS[tid].update(status="done", progress=100, stage="完成", result=res)
+        except Exception as exc:  # noqa: BLE001
+            TASKS[tid].update(status="error", error=str(exc)[:200])
+
+    threading.Thread(target=_run, daemon=True).start()
+    return {"ok": True, "task_id": tid}
+
+
+@app.get("/api/plan_task/{tid}")
+def plan_task(tid: str):
+    now = time.time()
+    for k in [k for k, v in TASKS.items() if now - v["t0"] > TASK_TTL]:
+        TASKS.pop(k, None)
+    t = TASKS.get(tid)
+    if not t:
+        return JSONResponse({"ok": False, "error": "任务不存在或已过期"}, status_code=404)
+    if t["status"] == "error":
+        TASKS.pop(tid, None)
+        return {"ok": False, "error": t.get("error") or "规划失败"}
+    if t["status"] != "done":
+        return {"ok": True, "status": "running", "progress": t["progress"], "stage": t["stage"]}
+    TASKS.pop(tid, None)
+    out = {"ok": True, "status": "done", "progress": 100, "stage": "完成"}
+    out.update(t["result"])
+    return out
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", "8000")))
+
