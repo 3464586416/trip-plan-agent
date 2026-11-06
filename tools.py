@@ -194,8 +194,11 @@ def export_markdown(plan: dict) -> dict:
         lines.append("")
     if plan.get("budget"):
         b = plan["budget"]
-        lines.append("**预算**：合计 %s 元/人（门票 %s + 餐饮 %s + 交通 %s）" % (
-            b.get("total"), b.get("ticket_per_person"), b.get("meals_per_person"), b.get("transit_per_person")))
+        people = max(1, int(b.get("people") or 1))
+        lines.append("**预算**：%s 人合计 %s 元（人均 %s 元；门票 %s + 餐饮 %s + 交通 %s）" % (
+            people, round(float(b.get("total") or 0)),
+            round(float(b.get("total") or 0) / people),
+            b.get("ticket_per_person"), b.get("meals_per_person"), b.get("transit_per_person")))
     return {"markdown": "\n".join(lines)}
 
 
