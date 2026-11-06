@@ -548,9 +548,14 @@ def plan_with_rules(req: dict) -> dict:
             # 下午：从 13:00 开始；要看夜景就留一个名额给晚上
             fill(17 * 60 + 30, max(LUNCH_E, 13 * 60), (3 if night else 4) - len(items))
             if night and len(items) < 4:
-                pool.sort(key=lambda p: (0 if ({"夜景", "观景", "江景"} & set(p.get("tags") or [])) else 1,
-                                         p["walk"], p["ticket"]))
-                fill(21 * 60 + 30, 19 * 60, 1)
+                night_tags = {"夜景", "观景", "江景"}
+                candidates = [p for p in pool
+                              if p["id"] not in used and night_tags & set(p.get("tags") or [])]
+                if candidates:
+                    saved = pool[:]
+                    pool[:] = candidates
+                    fill(21 * 60 + 30, 19 * 60, 1)
+                    pool[:] = saved
             if len(items) > 0:
                 lunch = "%s–%s" % (constraints._fmt(LUNCH_S), constraints._fmt(LUNCH_E))
         note = "有雨，安排室内为主" if is_rain else ""

@@ -85,7 +85,7 @@ trip_agent/
 ├── planner.py           # 需求解析 / Agent 循环 / 规则兜底
 ├── constraints.py       # 11 条硬约束校验 + 反馈生成
 ├── tools.py             # 5 个工具（景点库/天气/距离/预算/Markdown 导出）
-├── data/pois_gz.json    # 45 个广州景点（教学用近似数据）
+├── data/pois_gz.json    # 110 个广州景点，覆盖 11 个行政区（教学用近似数据）
 ├── static/index.html    # 单页时间轴界面（无前端构建）
 └── tests/test_cases.py  # 21 条约束用例
 ```

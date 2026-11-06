@@ -1,8 +1,9 @@
 {
   "meta": {
     "city": "广州",
-    "note": "人工整理的演示数据集：坐标为近似值，门票与开放时间以官方为准，仅用于行程规划演示。",
-    "updated": "2026-11-06"
+    "note": "广州 11 个行政区共 110 条：门票与开放时段为公开信息近似值，坐标为区级近似（接入地图 API 后可替换）。",
+    "updated": "2026-11-06",
+    "count": 110
   },
   "pois": [
     {
@@ -859,6 +860,1254 @@
         "江景",
         "夜跑",
         "免费"
+      ]
+    },
+    {
+      "id": "gz46",
+      "name": "广州博物馆(镇海楼)",
+      "district": "越秀",
+      "lat": 23.1408,
+      "lon": 113.2644,
+      "ticket": 10,
+      "open": "09:00-17:30",
+      "closed_on": [
+        0
+      ],
+      "indoor": true,
+      "duration_h": 1.5,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "博物馆",
+        "古建",
+        "登高"
+      ]
+    },
+    {
+      "id": "gz47",
+      "name": "广州城隍庙",
+      "district": "越秀",
+      "lat": 23.1295,
+      "lon": 113.2732,
+      "ticket": 0,
+      "open": "08:30-17:00",
+      "closed_on": [],
+      "indoor": true,
+      "duration_h": 0.8,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "古建",
+        "民俗",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz48",
+      "name": "五仙观",
+      "district": "越秀",
+      "lat": 23.1247,
+      "lon": 113.261,
+      "ticket": 0,
+      "open": "09:00-17:00",
+      "closed_on": [
+        0
+      ],
+      "indoor": true,
+      "duration_h": 0.8,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "古建",
+        "道教",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz49",
+      "name": "万木草堂",
+      "district": "越秀",
+      "lat": 23.1265,
+      "lon": 113.27,
+      "ticket": 0,
+      "open": "09:00-17:00",
+      "closed_on": [
+        0
+      ],
+      "indoor": true,
+      "duration_h": 0.8,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "近代史",
+        "书院",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz50",
+      "name": "广州起义烈士陵园",
+      "district": "越秀",
+      "lat": 23.13,
+      "lon": 113.286,
+      "ticket": 0,
+      "open": "06:00-21:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 1.2,
+      "walk": 2,
+      "elderly": true,
+      "tags": [
+        "纪念地",
+        "公园",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz51",
+      "name": "人民公园",
+      "district": "越秀",
+      "lat": 23.129,
+      "lon": 113.2635,
+      "ticket": 0,
+      "open": "06:00-22:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 0.8,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "公园",
+        "本地生活",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz52",
+      "name": "东山口(新河浦洋楼)",
+      "district": "越秀",
+      "lat": 23.123,
+      "lon": 113.292,
+      "ticket": 0,
+      "open": "00:00-24:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 1.5,
+      "walk": 2,
+      "elderly": true,
+      "tags": [
+        "欧陆建筑",
+        "拍照",
+        "咖啡"
+      ]
+    },
+    {
+      "id": "gz53",
+      "name": "二沙岛宏城公园",
+      "district": "越秀",
+      "lat": 23.118,
+      "lon": 113.323,
+      "ticket": 0,
+      "open": "06:00-22:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 1.0,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "公园",
+        "江景",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz54",
+      "name": "荔湾博物馆",
+      "district": "荔湾",
+      "lat": 23.118,
+      "lon": 113.24,
+      "ticket": 0,
+      "open": "09:00-17:00",
+      "closed_on": [
+        0
+      ],
+      "indoor": true,
+      "duration_h": 1.0,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "博物馆",
+        "西关",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz55",
+      "name": "华林寺",
+      "district": "荔湾",
+      "lat": 23.1185,
+      "lon": 113.247,
+      "ticket": 0,
+      "open": "08:00-17:00",
+      "closed_on": [],
+      "indoor": true,
+      "duration_h": 0.6,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "寺庙",
+        "玉器街",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz56",
+      "name": "仁威庙",
+      "district": "荔湾",
+      "lat": 23.121,
+      "lon": 113.238,
+      "ticket": 0,
+      "open": "08:00-17:00",
+      "closed_on": [],
+      "indoor": true,
+      "duration_h": 0.6,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "古庙",
+        "泮塘",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz57",
+      "name": "泮塘五约",
+      "district": "荔湾",
+      "lat": 23.122,
+      "lon": 113.237,
+      "ticket": 0,
+      "open": "00:00-24:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 1.2,
+      "walk": 2,
+      "elderly": true,
+      "tags": [
+        "古村",
+        "小吃",
+        "拍照"
+      ]
+    },
+    {
+      "id": "gz58",
+      "name": "广州文化公园",
+      "district": "荔湾",
+      "lat": 23.113,
+      "lon": 113.25,
+      "ticket": 0,
+      "open": "06:00-22:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 1.0,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "公园",
+        "展览",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz59",
+      "name": "白鹅潭风情酒吧街",
+      "district": "荔湾",
+      "lat": 23.106,
+      "lon": 113.232,
+      "ticket": 0,
+      "open": "17:00-24:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 1.5,
+      "walk": 2,
+      "elderly": false,
+      "tags": [
+        "夜景",
+        "酒吧",
+        "江景"
+      ]
+    },
+    {
+      "id": "gz60",
+      "name": "荔枝湾涌",
+      "district": "荔湾",
+      "lat": 23.1195,
+      "lon": 113.2405,
+      "ticket": 0,
+      "open": "00:00-24:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 1.5,
+      "walk": 2,
+      "elderly": true,
+      "tags": [
+        "水乡",
+        "坐船",
+        "拍照"
+      ]
+    },
+    {
+      "id": "gz61",
+      "name": "天河公园",
+      "district": "天河",
+      "lat": 23.125,
+      "lon": 113.364,
+      "ticket": 0,
+      "open": "06:00-22:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 1.2,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "公园",
+        "免费",
+        "亲子"
+      ]
+    },
+    {
+      "id": "gz62",
+      "name": "珠江公园",
+      "district": "天河",
+      "lat": 23.119,
+      "lon": 113.335,
+      "ticket": 0,
+      "open": "06:00-22:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 1.2,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "公园",
+        "免费",
+        "草坪"
+      ]
+    },
+    {
+      "id": "gz63",
+      "name": "广州购书中心",
+      "district": "天河",
+      "lat": 23.1345,
+      "lon": 113.327,
+      "ticket": 0,
+      "open": "10:00-22:00",
+      "closed_on": [],
+      "indoor": true,
+      "duration_h": 1.0,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "书店",
+        "室内",
+        "避暑"
+      ]
+    },
+    {
+      "id": "gz64",
+      "name": "天环广场",
+      "district": "天河",
+      "lat": 23.131,
+      "lon": 113.324,
+      "ticket": 0,
+      "open": "10:00-22:00",
+      "closed_on": [],
+      "indoor": true,
+      "duration_h": 1.5,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "购物",
+        "室内",
+        "餐饮"
+      ]
+    },
+    {
+      "id": "gz65",
+      "name": "火炉山森林公园",
+      "district": "天河",
+      "lat": 23.198,
+      "lon": 113.39,
+      "ticket": 0,
+      "open": "06:00-18:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 2.5,
+      "walk": 3,
+      "elderly": false,
+      "tags": [
+        "爬山",
+        "自然",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz66",
+      "name": "龙洞森林公园",
+      "district": "天河",
+      "lat": 23.215,
+      "lon": 113.387,
+      "ticket": 0,
+      "open": "06:00-18:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 2.5,
+      "walk": 3,
+      "elderly": false,
+      "tags": [
+        "爬山",
+        "自然",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz67",
+      "name": "中山大学(南校区)",
+      "district": "海珠",
+      "lat": 23.0955,
+      "lon": 113.295,
+      "ticket": 0,
+      "open": "08:00-18:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 1.5,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "校园",
+        "红砖建筑",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz68",
+      "name": "孙中山大元帅府纪念馆",
+      "district": "海珠",
+      "lat": 23.099,
+      "lon": 113.272,
+      "ticket": 0,
+      "open": "09:00-17:30",
+      "closed_on": [
+        0
+      ],
+      "indoor": true,
+      "duration_h": 1.0,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "近代史",
+        "博物馆",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz69",
+      "name": "海珠湿地公园",
+      "district": "海珠",
+      "lat": 23.053,
+      "lon": 113.334,
+      "ticket": 20,
+      "open": "09:00-17:00",
+      "closed_on": [
+        0
+      ],
+      "indoor": false,
+      "duration_h": 2.5,
+      "walk": 2,
+      "elderly": true,
+      "tags": [
+        "湿地",
+        "自然",
+        "亲子"
+      ]
+    },
+    {
+      "id": "gz70",
+      "name": "邓世昌纪念馆",
+      "district": "海珠",
+      "lat": 23.09,
+      "lon": 113.26,
+      "ticket": 0,
+      "open": "09:00-17:00",
+      "closed_on": [
+        0
+      ],
+      "indoor": true,
+      "duration_h": 0.8,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "近代史",
+        "纪念馆",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz71",
+      "name": "十香园纪念馆",
+      "district": "海珠",
+      "lat": 23.087,
+      "lon": 113.266,
+      "ticket": 0,
+      "open": "09:00-17:00",
+      "closed_on": [
+        0
+      ],
+      "indoor": true,
+      "duration_h": 0.8,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "园林",
+        "美术",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz72",
+      "name": "太古仓码头",
+      "district": "海珠",
+      "lat": 23.079,
+      "lon": 113.257,
+      "ticket": 0,
+      "open": "11:00-24:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 1.5,
+      "walk": 2,
+      "elderly": false,
+      "tags": [
+        "江景",
+        "夜景",
+        "拍照"
+      ]
+    },
+    {
+      "id": "gz73",
+      "name": "黄埔古港遗址",
+      "district": "海珠",
+      "lat": 23.038,
+      "lon": 113.414,
+      "ticket": 0,
+      "open": "09:00-17:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 1.5,
+      "walk": 2,
+      "elderly": true,
+      "tags": [
+        "古港",
+        "小吃",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz74",
+      "name": "晓港公园",
+      "district": "海珠",
+      "lat": 23.078,
+      "lon": 113.279,
+      "ticket": 0,
+      "open": "06:00-22:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 1.0,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "公园",
+        "免费",
+        "竹园"
+      ]
+    },
+    {
+      "id": "gz75",
+      "name": "岭南印象园",
+      "district": "番禺",
+      "lat": 23.006,
+      "lon": 113.402,
+      "ticket": 60,
+      "open": "09:00-17:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 2.5,
+      "walk": 2,
+      "elderly": true,
+      "tags": [
+        "古村",
+        "民俗",
+        "亲子"
+      ]
+    },
+    {
+      "id": "gz76",
+      "name": "余荫山房",
+      "district": "番禺",
+      "lat": 23.007,
+      "lon": 113.345,
+      "ticket": 18,
+      "open": "08:30-17:30",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 1.2,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "园林",
+        "岭南",
+        "古建"
+      ]
+    },
+    {
+      "id": "gz77",
+      "name": "大夫山森林公园",
+      "district": "番禺",
+      "lat": 22.965,
+      "lon": 113.311,
+      "ticket": 0,
+      "open": "06:00-18:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 2.5,
+      "walk": 3,
+      "elderly": false,
+      "tags": [
+        "骑行",
+        "自然",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz78",
+      "name": "番禺博物馆",
+      "district": "番禺",
+      "lat": 22.951,
+      "lon": 113.368,
+      "ticket": 0,
+      "open": "09:00-17:00",
+      "closed_on": [
+        0
+      ],
+      "indoor": true,
+      "duration_h": 1.0,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "博物馆",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz79",
+      "name": "长隆水上乐园",
+      "district": "番禺",
+      "lat": 23.001,
+      "lon": 113.328,
+      "ticket": 260,
+      "open": "10:00-18:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 5.0,
+      "walk": 3,
+      "elderly": false,
+      "tags": [
+        "主题乐园",
+        "亲子",
+        "戏水"
+      ]
+    },
+    {
+      "id": "gz80",
+      "name": "番禺大学城中心湖",
+      "district": "番禺",
+      "lat": 23.052,
+      "lon": 113.397,
+      "ticket": 0,
+      "open": "00:00-24:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 1.5,
+      "walk": 2,
+      "elderly": true,
+      "tags": [
+        "骑行",
+        "湖景",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz81",
+      "name": "白云湖公园",
+      "district": "白云",
+      "lat": 23.265,
+      "lon": 113.226,
+      "ticket": 0,
+      "open": "06:00-22:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 2.0,
+      "walk": 2,
+      "elderly": true,
+      "tags": [
+        "公园",
+        "湖景",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz82",
+      "name": "帽峰山森林公园",
+      "district": "白云",
+      "lat": 23.298,
+      "lon": 113.436,
+      "ticket": 10,
+      "open": "06:00-18:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 3.5,
+      "walk": 3,
+      "elderly": false,
+      "tags": [
+        "爬山",
+        "自然"
+      ]
+    },
+    {
+      "id": "gz83",
+      "name": "云溪生态公园",
+      "district": "白云",
+      "lat": 23.172,
+      "lon": 113.297,
+      "ticket": 0,
+      "open": "06:00-21:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 1.5,
+      "walk": 2,
+      "elderly": true,
+      "tags": [
+        "公园",
+        "免费",
+        "亲子"
+      ]
+    },
+    {
+      "id": "gz84",
+      "name": "三元里抗英斗争纪念馆",
+      "district": "白云",
+      "lat": 23.16,
+      "lon": 113.258,
+      "ticket": 0,
+      "open": "09:00-17:00",
+      "closed_on": [
+        0
+      ],
+      "indoor": true,
+      "duration_h": 0.8,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "近代史",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz85",
+      "name": "广州市儿童公园",
+      "district": "白云",
+      "lat": 23.164,
+      "lon": 113.277,
+      "ticket": 0,
+      "open": "08:00-18:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 2.0,
+      "walk": 2,
+      "elderly": true,
+      "tags": [
+        "亲子",
+        "免费",
+        "户外"
+      ]
+    },
+    {
+      "id": "gz86",
+      "name": "南湖游乐园(旧址)",
+      "district": "白云",
+      "lat": 23.198,
+      "lon": 113.315,
+      "ticket": 0,
+      "open": "10:00-18:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 1.0,
+      "walk": 2,
+      "elderly": true,
+      "tags": [
+        "怀旧",
+        "拍照"
+      ]
+    },
+    {
+      "id": "gz87",
+      "name": "萝岗香雪公园",
+      "district": "黄埔",
+      "lat": 23.181,
+      "lon": 113.529,
+      "ticket": 0,
+      "open": "07:00-19:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 2.0,
+      "walk": 2,
+      "elderly": true,
+      "tags": [
+        "梅花",
+        "公园",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz88",
+      "name": "天鹿湖森林公园",
+      "district": "黄埔",
+      "lat": 23.221,
+      "lon": 113.489,
+      "ticket": 0,
+      "open": "06:00-18:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 2.5,
+      "walk": 3,
+      "elderly": false,
+      "tags": [
+        "爬山",
+        "自然",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz89",
+      "name": "深井古村(长洲岛)",
+      "district": "黄埔",
+      "lat": 23.077,
+      "lon": 113.417,
+      "ticket": 0,
+      "open": "00:00-24:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 1.5,
+      "walk": 2,
+      "elderly": true,
+      "tags": [
+        "古村",
+        "骑行",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz90",
+      "name": "玉岩书院",
+      "district": "黄埔",
+      "lat": 23.189,
+      "lon": 113.508,
+      "ticket": 0,
+      "open": "09:00-17:00",
+      "closed_on": [
+        0
+      ],
+      "indoor": true,
+      "duration_h": 0.8,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "书院",
+        "古建",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz91",
+      "name": "黄埔军校旧址游船码头",
+      "district": "黄埔",
+      "lat": 23.09,
+      "lon": 113.42,
+      "ticket": 30,
+      "open": "09:00-17:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 1.0,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "坐船",
+        "江景"
+      ]
+    },
+    {
+      "id": "gz92",
+      "name": "圆玄道观",
+      "district": "花都",
+      "lat": 23.376,
+      "lon": 113.179,
+      "ticket": 10,
+      "open": "08:00-17:30",
+      "closed_on": [],
+      "indoor": true,
+      "duration_h": 1.2,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "道教",
+        "古建"
+      ]
+    },
+    {
+      "id": "gz93",
+      "name": "洪秀全故居",
+      "district": "花都",
+      "lat": 23.409,
+      "lon": 113.096,
+      "ticket": 10,
+      "open": "09:00-17:00",
+      "closed_on": [
+        0
+      ],
+      "indoor": true,
+      "duration_h": 1.0,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "近代史",
+        "故居"
+      ]
+    },
+    {
+      "id": "gz94",
+      "name": "花都湖公园",
+      "district": "花都",
+      "lat": 23.39,
+      "lon": 113.218,
+      "ticket": 0,
+      "open": "06:00-22:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 1.8,
+      "walk": 2,
+      "elderly": true,
+      "tags": [
+        "公园",
+        "湖景",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz95",
+      "name": "九龙湖度假区",
+      "district": "花都",
+      "lat": 23.458,
+      "lon": 113.29,
+      "ticket": 30,
+      "open": "09:00-18:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 3.0,
+      "walk": 2,
+      "elderly": true,
+      "tags": [
+        "湖景",
+        "度假",
+        "亲子"
+      ]
+    },
+    {
+      "id": "gz96",
+      "name": "王子山森林公园",
+      "district": "花都",
+      "lat": 23.562,
+      "lon": 113.336,
+      "ticket": 20,
+      "open": "08:00-17:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 3.5,
+      "walk": 3,
+      "elderly": false,
+      "tags": [
+        "爬山",
+        "自然"
+      ]
+    },
+    {
+      "id": "gz97",
+      "name": "南沙湿地公园",
+      "district": "南沙",
+      "lat": 22.639,
+      "lon": 113.556,
+      "ticket": 50,
+      "open": "09:00-17:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 3.0,
+      "walk": 2,
+      "elderly": true,
+      "tags": [
+        "湿地",
+        "观鸟",
+        "远"
+      ]
+    },
+    {
+      "id": "gz98",
+      "name": "百万葵园",
+      "district": "南沙",
+      "lat": 22.672,
+      "lon": 113.542,
+      "ticket": 60,
+      "open": "09:00-17:30",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 2.5,
+      "walk": 2,
+      "elderly": true,
+      "tags": [
+        "花海",
+        "亲子",
+        "拍照"
+      ]
+    },
+    {
+      "id": "gz99",
+      "name": "黄山鲁森林公园",
+      "district": "南沙",
+      "lat": 22.78,
+      "lon": 113.545,
+      "ticket": 0,
+      "open": "06:00-18:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 2.5,
+      "walk": 3,
+      "elderly": false,
+      "tags": [
+        "爬山",
+        "自然",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz100",
+      "name": "南沙滨海公园",
+      "district": "南沙",
+      "lat": 22.744,
+      "lon": 113.61,
+      "ticket": 0,
+      "open": "06:00-22:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 1.8,
+      "walk": 2,
+      "elderly": true,
+      "tags": [
+        "海边",
+        "骑行",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz101",
+      "name": "十九涌渔人码头",
+      "district": "南沙",
+      "lat": 22.598,
+      "lon": 113.642,
+      "ticket": 0,
+      "open": "09:00-20:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 1.5,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "海鲜",
+        "市场",
+        "远"
+      ]
+    },
+    {
+      "id": "gz102",
+      "name": "何仙姑家庙",
+      "district": "增城",
+      "lat": 23.292,
+      "lon": 113.823,
+      "ticket": 10,
+      "open": "08:00-17:30",
+      "closed_on": [],
+      "indoor": true,
+      "duration_h": 0.8,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "古庙",
+        "民俗"
+      ]
+    },
+    {
+      "id": "gz103",
+      "name": "正果老街",
+      "district": "增城",
+      "lat": 23.43,
+      "lon": 113.9,
+      "ticket": 0,
+      "open": "00:00-24:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 1.2,
+      "walk": 2,
+      "elderly": true,
+      "tags": [
+        "老街",
+        "小吃",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz104",
+      "name": "挂绿湖",
+      "district": "增城",
+      "lat": 23.27,
+      "lon": 113.783,
+      "ticket": 0,
+      "open": "06:00-22:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 2.0,
+      "walk": 2,
+      "elderly": true,
+      "tags": [
+        "湖景",
+        "骑行",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz105",
+      "name": "湖心岛景区",
+      "district": "增城",
+      "lat": 23.23,
+      "lon": 113.94,
+      "ticket": 30,
+      "open": "09:00-17:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 2.0,
+      "walk": 2,
+      "elderly": true,
+      "tags": [
+        "江景",
+        "坐船"
+      ]
+    },
+    {
+      "id": "gz106",
+      "name": "流溪河国家森林公园",
+      "district": "从化",
+      "lat": 23.745,
+      "lon": 113.78,
+      "ticket": 40,
+      "open": "08:00-17:30",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 3.5,
+      "walk": 3,
+      "elderly": false,
+      "tags": [
+        "森林",
+        "爬山",
+        "远"
+      ]
+    },
+    {
+      "id": "gz107",
+      "name": "石门国家森林公园",
+      "district": "从化",
+      "lat": 23.61,
+      "lon": 113.72,
+      "ticket": 40,
+      "open": "08:00-17:30",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 4.0,
+      "walk": 3,
+      "elderly": false,
+      "tags": [
+        "森林",
+        "红叶",
+        "远"
+      ]
+    },
+    {
+      "id": "gz108",
+      "name": "碧水湾温泉",
+      "district": "从化",
+      "lat": 23.66,
+      "lon": 113.64,
+      "ticket": 188,
+      "open": "10:00-23:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 4.0,
+      "walk": 1,
+      "elderly": true,
+      "tags": [
+        "温泉",
+        "度假",
+        "过夜"
+      ]
+    },
+    {
+      "id": "gz109",
+      "name": "溪头村",
+      "district": "从化",
+      "lat": 23.75,
+      "lon": 113.85,
+      "ticket": 0,
+      "open": "00:00-24:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 2.5,
+      "walk": 3,
+      "elderly": false,
+      "tags": [
+        "古村",
+        "徒步",
+        "免费"
+      ]
+    },
+    {
+      "id": "gz110",
+      "name": "千泷沟大瀑布",
+      "district": "从化",
+      "lat": 23.69,
+      "lon": 113.88,
+      "ticket": 60,
+      "open": "08:30-17:00",
+      "closed_on": [],
+      "indoor": false,
+      "duration_h": 2.5,
+      "walk": 3,
+      "elderly": false,
+      "tags": [
+        "瀑布",
+        "徒步"
       ]
     }
   ]
