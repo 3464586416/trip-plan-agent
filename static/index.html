@@ -17,6 +17,7 @@
   h1{font-size:22px;margin:0 0 6px}
   .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
   .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+  .note-free{font-size:12.5px;color:#8fa3bf;margin:-4px 0 16px;padding:8px 12px;border-left:2px solid #3b5bdb;background:rgba(59,91,219,.09);border-radius:0 8px 8px 0}
   .prog{margin-top:14px}
   .prog .bar{height:8px;border-radius:6px;background:rgba(255,255,255,.1);overflow:hidden}
   .prog .fill{height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,#4f8cff,#22d3a6);transition:width .45s ease}
@@ -66,6 +67,7 @@
 <div class="wrap">
   <h1>广州行程规划 Agent</h1>
   <div class="sub">说清天数、预算、同行人、必去景点，它会自己查景点/天气/距离/预算，排完还会自检硬约束。</div>
+  <div class="note-free">受免费服务器性能影响，生成时间会比较长（通常 30–90 秒，最长可能两分钟），进度条会实时显示用时。</div>
 
   <div class="panel">
     <textarea id="q" placeholder="例如：广州 2 天，两个人，预算 1600（两人合计），带父母不想走太多路，想去广州塔"></textarea>
@@ -103,15 +105,16 @@ go.onclick = async () => {
   const text = q.value.trim();
   if(!text){ q.focus(); return; }
   go.disabled = true; go.textContent = '规划中…';
-  out.innerHTML = '<div class="panel prog"><div class="line"><span id="pgstage">正在解析需求</span><b id="pgpct">3%</b></div>' +
+  out.innerHTML = '<div class="panel prog"><div class="line"><span id="pgstage">正在解析需求</span><b id="pgpct">3% · 已用 0s</b></div>' +
                   '<div class="bar"><div class="fill" id="pgfill" style="width:3%"></div></div></div>';
   const stageEl = document.getElementById('pgstage');
   const pctEl = document.getElementById('pgpct');
   const fillEl = document.getElementById('pgfill');
+  const t0 = Date.now();
   const setProg = (p, s) => {
     const v = Math.max(3, Math.min(99, Math.round(p)));
     fillEl.style.width = v + '%';
-    pctEl.textContent = v + '%';
+    pctEl.textContent = v + '% · 已用 ' + Math.round((Date.now() - t0) / 1000) + 's';
     if(s) stageEl.textContent = s;
   };
   try{
@@ -133,7 +136,10 @@ go.onclick = async () => {
       if(!st.ok){ out.innerHTML = '<div class="panel err">' + esc(st.error || '规划失败') + '</div>'; return; }
       if(st.status === 'done'){ data = st; break; }
       setProg(st.progress || 3, st.stage || '规划中');
-      if(waited > 180){ out.innerHTML = '<div class="panel err">等太久了，换个说法再试</div>'; return; }
+      if(waited > 90 && st.status !== 'done'){
+        document.getElementById('pgstage').textContent = '模型还在排（免费实例算力小，排满一天要点时间）';
+      }
+      if(waited > 300){ out.innerHTML = '<div class="panel err">这次排得太久了（超过 5 分钟），稍后再试或把需求写短一点</div>'; return; }
     }
     render(data);
   }catch(e){

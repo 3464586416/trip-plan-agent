@@ -55,6 +55,8 @@ SYSTEM_PROMPT = """你是"广州行程规划师"，用工具查数据、排行�
 6. 每天 11:30–14:00 之间留出午餐空档；
 6b. 同一天尽量只安排同一行政区或相邻区的景点；番禺/南沙/花都/从化/增城这类远郊点单独占一天；
 6c. 每个景点在一趟行程里只能出现一次，第 2 天以后不要重复第 1 天用过的点；
+6d. search_poi 返回的 closed_on 是闭馆星期（0=周一 … 6=周日），排之前先核对当天是周几，
+    周一闭馆的博物馆不要排到周一，否则会被打回；
 7. 天气有雨时，把室外项目换成室内备选；
 8. 每天尽量排 3–4 个景点（受开放时间或用户限制排不满就少排，不要硬凑）。
 
@@ -250,7 +252,8 @@ def parse_request(text: str, today: date | None = None) -> dict:
     req["assumed_days"] = not explicit["days"]
     if any(k in text for k in ("不想走", "少走", "走不动", "腿脚", "轻松")):
         req["max_walk"] = 1
-    elif any(k in text for k in ("爬山", "徒步", "暴走", "运动量")):
+    elif any(k in text for k in ("爬山", "徒步", "暴走", "运动量", "走多点", "多走路", "多走点",
+                                 "健身", "锻炼", "体力好", "不怕走", "能走")):
         req["max_walk"] = 3
     if any(k in text for k in ("下雨", "雨天", "室内", "避暑", "空调")):
         req["indoor_pref"] = True
@@ -502,12 +505,18 @@ def _repair_plan(plan: dict, req: dict) -> dict | None:
     seen: set[str] = set()
     days = []
     for d in plan.get("days") or []:
+        try:
+            wd = date.fromisoformat(d.get("date") or "").weekday()
+        except Exception:
+            wd = None
         items = sorted((d.get("items") or []), key=lambda x: x.get("start") or "09:00")
         kept, cursor, prev = [], None, None
         for it in items:
             pid = it.get("poi_id")
             poi = tools.POI_BY_ID.get(pid)
             if not poi or pid in seen:
+                continue
+            if wd is not None and wd in (poi.get("closed_on") or []):
                 continue
             dur = int(poi["duration_h"] * 60)
             oa, ob = constraints._open_range(poi["open"])
