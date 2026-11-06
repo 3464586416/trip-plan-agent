@@ -120,7 +120,7 @@ def get_weather(city: str, start_date: str, days: int) -> dict:
                 })
         if out:
             return {"city": city, "days": out}
-    except Exception as exc:  # 网络不可用时不能让整个规划失败
+    except Exception:  # 网络不可用时不能让整个规划失败
         pass
     out = []
     for i in range(days):

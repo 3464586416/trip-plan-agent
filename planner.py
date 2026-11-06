@@ -591,7 +591,7 @@ def plan_with_rules(req: dict) -> dict:
 
         def fill(until: int, cursor: int, budget: int):
             """从 cursor 排到 until，返回新的 cursor/prev_id/可排数量"""
-            nonlocal items, prev_id
+            nonlocal prev_id
             n = 0
             while n < budget:
                 picked = None
@@ -688,7 +688,6 @@ def _plan_trip(text: str) -> dict:
 
 
 if __name__ == "__main__":
-    import sys
     text = " ".join(sys.argv[1:]) or "广州 2 天，每人预算 800，带父母不想走太多路"
     r = plan_trip(text)
     print(r["markdown"])

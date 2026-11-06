@@ -66,16 +66,22 @@ export TRIP_LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 export TRIP_LLM_MODEL=qwen-plus
 
 python app.py                            # http://127.0.0.1:8000
-python -m pytest tests -q                # 21 条约束用例
+python -m pytest tests -q                # 34 条用例（解析 + 排程 + 渲染）
 ```
 
 ## API
 
 ```
-GET  /health          -> {"ok": true, "llm": true|false}
-POST /api/plan        -> {"text": "广州 2 天，两个人，预算 1600，带父母不想走太多路，想去广州塔"}
-                        返回 plan / validation / markdown / source(llm|rules)
+GET  /health                     -> {"ok": true, "llm": true|false}
+POST /api/plan                   -> 同步规划（一次请求等到底，适合 curl / 脚本）
+                                    {"text": "广州 2 天，两个人，预算 1600，带父母不想走太多路"}
+POST /api/plan_async             -> 异步规划（页面用这个）：{"text": "..."} → {"task_id": "..."}
+GET  /api/plan_task/{task_id}    -> 轮询：running 时返回 progress/stage，完成时返回完整结果
+                                    返回 plan / validation / markdown / source(llm|rules(fallback)|llm-partial)
 ```
+
+限流：每 IP 每分钟 `TRIP_RATE_PER_MIN`（默认 6）次、每天 `TRIP_DAILY_CAP`（默认 300）次，
+单条需求 ≤300 字；异步任务结果保留 15 分钟。
 
 ## 目录
 
@@ -87,7 +93,8 @@ trip_agent/
 ├── tools.py             # 5 个工具（景点库/天气/距离/预算/Markdown 导出）
 ├── data/pois_gz.json    # 110 个广州景点，覆盖 11 个行政区（教学用近似数据）
 ├── static/index.html    # 单页时间轴界面（无前端构建）
-└── tests/test_cases.py  # 21 条约束用例
+├── render.yaml          # Render 一键部署（Blueprint）
+└── tests/test_cases.py  # 34 条用例
 ```
 
 ## 已知边界
