@@ -196,3 +196,34 @@ def test_all_green_on_normal_input():
                  "广州 2 天，带父母不想走太多路"):
         out = run(text)
         assert out["validation"]["ok"], (text, codes(out))
+
+
+# 21 两周：封顶 7 天并给出提示
+def test_two_weeks_capped():
+    req = run("广州 2周")["req"]
+    assert req["days"] == 7
+    assert "7 天" in (req.get("hint") or "")
+
+
+# 22 10 天同样封顶
+def test_ten_days_capped():
+    req = run("广州 10天")["req"]
+    assert req["days"] == 7 and req.get("hint")
+
+
+# 23 "2W" 单独出现按周理解，不当成 2 万
+def test_w_means_week_without_money_context():
+    req = run("广州 2W")["req"]
+    assert req["days"] == 7 and req["budget"] is None
+
+
+# 24 有"预算"时 2W 才是 2 万
+def test_w_means_money_with_context():
+    req = run("广州 2周 预算 2W")["req"]
+    assert req["budget"] == 20000
+
+
+# 25 没写天数时给追问
+def test_ask_when_no_days():
+    req = run("广州")["req"]
+    assert any("几天" in a for a in (req.get("ask") or []))

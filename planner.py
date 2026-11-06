@@ -81,13 +81,18 @@ def parse_request(text: str, today: date | None = None) -> dict:
         n = int(tok) if tok.isdigit() else _cn2num(tok)
         req["days"] = max(1, min(n, 7))
         explicit["days"] = True
+        if n > 7:
+            req["hint"] = "你要排 %d 天，这边最多排 7 天，先给你 7 天的版本。" % n
     else:
-        m = re.search(r"(\d+|[一二两三四五六七八九十]+|半)\s*(?:个)?\s*(?:星期|礼拜|周|w|W)", text)
+        m = re.search(r"(\d+|[一二两三四五六七八九十]+|半)\s*(?:个)?\s*(?:星期|礼拜|周)", text)
         if m:
             tok = m.group(1)
             n = 0.5 if tok == "半" else (int(tok) if tok.isdigit() else _cn2num(tok))
-            req["days"] = max(1, min(int(round(n * 7)), 7))
+            want = int(round(n * 7))
+            req["days"] = max(1, min(want, 7))
             explicit["days"] = True
+            if want > 7:
+                req["hint"] = "你要排 %d 天，这边最多排 7 天，先给你 7 天的版本。" % want
         elif any(k in text for k in ("一日游", "当天往返", "当天来回")):
             req["days"] = 1
             explicit["days"] = True
@@ -102,9 +107,24 @@ def parse_request(text: str, today: date | None = None) -> dict:
         elif "周末" in text and req["days"] == 2:
             explicit["days"] = True
 
+    # "2W / 3w" 歧义：附近没有金额词时按周理解（2W = 2 周）
+    money_ctx = any(k in text for k in ("预算", "花费", "费用", "元", "块", "¥", "￥", "RMB", "rmb"))
+    budget_text = text
+    if not money_ctx and not explicit["days"]:
+        m = re.search(r"(\d+|[一二两三四五六七八九十]+)\s*[wW](?![a-zA-Z])", text)
+        if m:
+            tok = m.group(1)
+            n = int(tok) if tok.isdigit() else _cn2num(tok)
+            want = n * 7
+            req["days"] = max(1, min(want, 7))
+            explicit["days"] = True
+            if want > 7:
+                req["hint"] = "你要排 %d 天（%d 周），这边最多排 7 天，先给你 7 天的版本。" % (want, n)
+            budget_text = text[:m.start()] + " " + text[m.end():]
+
     # ---------- 预算：1W / 3k / 1万 / 8000元 / 800块 / 预算 1500 / ¥2000 / 1RMB ----------
     m = re.search(r"(?:预算|花费|费用|大概|大约|约|不超过|控制在|最多)?\s*"
-                  r"(\d+(?:\.\d+)?)\s*(万|w|W|k|K|千|元|块|¥|￥|rmb|RMB|Rmb)", text)
+                  r"(\d+(?:\.\d+)?)\s*(万|w|W|k|K|千|元|块|¥|￥|rmb|RMB|Rmb)", budget_text)
     if m:
         val = float(m.group(1))
         unit = m.group(2).lower()
@@ -115,7 +135,7 @@ def parse_request(text: str, today: date | None = None) -> dict:
         req["budget"] = val
         explicit["budget"] = True
     else:
-        m = re.search(r"预算\s*(?:是|为|大概|约)?\s*(\d+(?:\.\d+)?)", text)
+        m = re.search(r"预算\s*(?:是|为|大概|约)?\s*(\d+(?:\.\d+)?)", budget_text)
         if m:
             req["budget"] = float(m.group(1))
             explicit["budget"] = True
