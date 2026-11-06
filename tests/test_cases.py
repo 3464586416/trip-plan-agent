@@ -227,3 +227,33 @@ def test_w_means_money_with_context():
 def test_ask_when_no_days():
     req = run("广州")["req"]
     assert any("几天" in a for a in (req.get("ask") or []))
+
+
+# 26 日期区间 12.3~12.9 → 7 天且出发日正确
+def test_date_range_dotted():
+    req = run("广州 12.3~12.9")["req"]
+    assert req["start_date"].endswith("-12-03") and req["days"] == 7
+
+
+# 27 日期区间 12月3日-12月9日
+def test_date_range_chinese():
+    req = run("广州 12月3日-12月9日")["req"]
+    assert req["start_date"].endswith("-12-03") and req["days"] == 7
+
+
+# 28 跨月跨年 12.28-1.3
+def test_date_range_cross_month():
+    out = run("广州 12.28-1.3")
+    req = out["req"]
+    assert req["start_date"].endswith("-12-28") and req["days"] == 7
+    assert out["plan"]["days"][-1]["date"].endswith("-01-03")
+
+
+# 29 "12月9日" 里的 9日 不当成 9 天
+def test_day_number_not_duration():
+    assert run("广州 12月3日-12月9日")["req"]["days"] == 7
+
+
+# 30 单日 12.3 作为出发日
+def test_single_date():
+    assert run("广州 12.3 玩3天")["req"]["start_date"].endswith("-12-03")

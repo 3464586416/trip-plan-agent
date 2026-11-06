@@ -48,6 +48,47 @@ SYSTEM_PROMPT = """你是"广州行程规划师"，用工具查数据、排行�
 提交被拒时，逐条解决反馈里的问题再提交，不要原样重交。"""
 
 
+
+def _parse_date_range(text: str, today: date):
+    """识别 12.3~12.9 / 12月3日-12月9日 / 12/3 至 12/9，返回 (start_iso, 天数)。"""
+    sep = r"\s*(?:~|-|—|–|到|至|起)\s*"
+    # 同月：12月3日-9日
+    m = re.search(r"(\d{1,2})\s*月\s*(\d{1,2})\s*[日号]?" + sep + r"(\d{1,2})\s*[日号]", text)
+    if m:
+        mon, d1, d2 = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        if 1 <= mon <= 12 and 1 <= d1 <= 31 and 1 <= d2 <= 31 and d2 >= d1:
+            y = _pick_year(today, mon, d1)
+            start = date(y, mon, d1)
+            return start.isoformat(), (date(y, mon, d2) - start).days + 1
+    # 跨月：12.3~12.9 / 12月3日-12月9日 / 12/3 至 12/9
+    m = re.search(r"(\d{1,2})\s*[.月/]\s*(\d{1,2})\s*[日号]?" + sep +
+                  r"(\d{1,2})\s*[.月/]\s*(\d{1,2})\s*[日号]?", text)
+    if m:
+        m1, d1, m2, d2 = (int(m.group(i)) for i in range(1, 5))
+        if all(1 <= x <= 12 for x in (m1, m2)) and 1 <= d1 <= 31 and 1 <= d2 <= 31:
+            y1 = _pick_year(today, m1, d1)
+            y2 = y1 + 1 if m2 < m1 else y1
+            try:
+                start = date(y1, m1, d1)
+                end = date(y2, m2, d2)
+            except ValueError:
+                return None
+            span = (end - start).days + 1
+            if span <= 0:
+                return None
+            return start.isoformat(), span
+    # 单日：12月3日 / 12.3（当作出发日，天数另算）
+    return None
+
+
+def _pick_year(today: date, month: int, day: int) -> int:
+    """没写年份时：今年还没过就用今年，过了就用明年。"""
+    try:
+        this_year = date(today.year, month, day)
+    except ValueError:
+        return today.year
+    return this_year.year if this_year >= today else today.year + 1
+
 # ------------------------------------------------------------------ 需求解析
 
 _CN_DIGITS = {"一": 1, "二": 2, "两": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9}
@@ -75,7 +116,7 @@ def parse_request(text: str, today: date | None = None) -> dict:
 
     # ---------- 天数：3天 / 三天 / 1D / 2 day / 一周 / 1个星期 ----------
     explicit = {"days": False, "budget": False, "people": False}
-    m = re.search(r"(\d+|[一二两三四五六七八九十]+)\s*(?:天|日|days|day|d|D)", text)
+    m = re.search(r"(?<![月\d])(\d+|[一二两三四五六七八九十]+)\s*(?:天|日|days|day|d|D)", text)
     if m:
         tok = m.group(1)
         n = int(tok) if tok.isdigit() else _cn2num(tok)
@@ -198,10 +239,24 @@ def parse_request(text: str, today: date | None = None) -> dict:
     if any(k in text for k in ("下雨", "雨天", "室内", "避暑", "空调")):
         req["indoor_pref"] = True
 
-    # 日期：显式日期 > 明天 > 今天
-    m = re.search(r"(20\d{2})[-/年](\d{1,2})[-/月](\d{1,2})", text)
-    if m:
+    # 日期：区间 > 显式日期 > 明天 > 今天
+    rng = _parse_date_range(text, today)
+    if rng:
+        req["start_date"], span = rng
+        req["days"] = max(1, min(span, 7))
+        explicit["days"] = True
+        if span > 7:
+            req["hint"] = "你选的时间跨度是 %d 天，这边最多排 7 天，先给你前 7 天的版本。" % span
+    elif re.search(r"(20\d{2})[-/年](\d{1,2})[-/月](\d{1,2})", text):
+        m = re.search(r"(20\d{2})[-/年](\d{1,2})[-/月](\d{1,2})", text)
         req["start_date"] = date(int(m.group(1)), int(m.group(2)), int(m.group(3))).isoformat()
+    elif re.search(r"(\d{1,2})\s*[.月/]\s*(\d{1,2})\s*[日号]?(?!\s*[.月/\d])", text):
+        m = re.search(r"(\d{1,2})\s*[.月/]\s*(\d{1,2})\s*[日号]?", text)
+        mon, day = int(m.group(1)), int(m.group(2))
+        if 1 <= mon <= 12 and 1 <= day <= 31:
+            req["start_date"] = date(_pick_year(today, mon, day), mon, day).isoformat()
+        else:
+            req["start_date"] = today.isoformat()
     elif "后天" in text:
         req["start_date"] = (today + timedelta(days=2)).isoformat()
     elif "明天" in text:
