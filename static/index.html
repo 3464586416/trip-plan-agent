@@ -119,9 +119,10 @@ go.onclick = async () => {
 function render(d){
   const v = d.validation || {};
   const srcName = {'llm': '模型规划 · ' + d.rounds + ' 轮自检',
-                   'rules': '规则排程',
-                   'rules(fallback)': '模型没排好，已自动改用规则排程',
-                   'llm-partial': '模型方案仍有争议项'};
+                   'llm-repaired': '模型规划 · 已自动校正',
+                   'rules': '规则排程 · 已校验',
+                   'rules(fallback)': '规则排程 · 已校验',
+                   'llm-partial': '模型方案 · 部分约束未满足'};
   const src = srcName[d.source] || d.source;
   const okTag = v.ok
     ? '<span class="tag ok">硬约束全部通过</span>'

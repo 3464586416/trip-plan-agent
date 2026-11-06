@@ -257,3 +257,30 @@ def test_day_number_not_duration():
 # 30 单日 12.3 作为出发日
 def test_single_date():
     assert run("广州 12.3 玩3天")["req"]["start_date"].endswith("-12-03")
+
+
+# 21 模型方案修复器：重复景点被去掉、时间按真实通行时间重排后仍能通过校验
+def test_repair_plan_dedupes_and_retimes():
+    req = planner.parse_request("广州 2 天")
+    d1 = req["start_date"]
+    from datetime import date as _d, timedelta as _td
+    d2 = (_d.fromisoformat(d1) + _td(days=1)).isoformat()
+    bad = {"days": [
+        {"date": d1, "items": [
+            {"poi_id": "gz01", "start": "09:00", "end": "10:00"},
+            {"poi_id": "gz01", "start": "10:05", "end": "11:05"},
+            {"poi_id": "gz18", "start": "11:10", "end": "12:10"},
+        ]},
+        {"date": d2, "items": [
+            {"poi_id": "gz18", "start": "09:00", "end": "10:00"},
+            {"poi_id": "gz05", "start": "10:10", "end": "11:00"},
+        ]},
+    ]}
+    fixed = planner._repair_plan(bad, req)
+    assert fixed is not None and fixed["validation"]["ok"]
+    ids = [it["poi_id"] for dd in fixed["plan"]["days"] for it in dd["items"]]
+    assert len(ids) == len(set(ids))
+    for dd in fixed["plan"]["days"]:
+        for a, b in zip(dd["items"], dd["items"][1:]):
+            gap = constraints._min(b["start"]) - constraints._min(a["end"])
+            assert gap >= tools.transit_minutes(a["poi_id"], b["poi_id"])

@@ -39,6 +39,8 @@ SYSTEM_PROMPT = """你是"广州行程规划师"，用工具查数据、排行�
 4. 预算按 budget_calc 的结果控制在用户要求以内（预算默认是"每人"）；
 5. 用户要求的步行强度、适老、室内偏好必须满足：优先调用 search_poi 的 elderly_only / max_walk / indoor_only 过滤，不要自己猜；
 6. 每天 11:30–14:00 之间留出午餐空档；
+6b. 同一天尽量只安排同一行政区或相邻区的景点；番禺/南沙/花都/从化/增城这类远郊点单独占一天；
+6c. 每个景点在一趟行程里只能出现一次，第 2 天以后不要重复第 1 天用过的点；
 7. 天气有雨时，把室外项目换成室内备选；
 8. 每天尽量排 3–4 个景点（受开放时间或用户限制排不满就少排，不要硬凑）。
 
@@ -400,7 +402,12 @@ def plan_with_llm(req: dict) -> dict | None:
                 if result["ok"]:
                     _annotate_lunch(plan)
                     return {"plan": plan, "validation": result, "rounds": rounds, "source": "llm"}
+                used = "、".join("%s=%s" % (i, tools.POI_BY_ID[i]["name"])
+                                 for d in (plan.get("days") or [])
+                                 for it in (d.get("items") or [])
+                                 for i in [it.get("poi_id")] if i in tools.POI_BY_ID)
                 messages.append({"role": "user", "content": constraints.feedback(result) +
+                                 "\n已用景点（不能重复使用）：" + used +
                                  "\n【本轮只做修复：不要再调用 search_poi / get_weather / distance_between / budget_calc，直接按上面的问题改完再调用 submit_plan】"})
                 fix_mode = True
                 continue
@@ -434,6 +441,10 @@ def plan_with_llm(req: dict) -> dict | None:
     _dbg("loop end", "rounds", rounds, "steps", steps, "last_result", bool(last_result))
     if last_result:
         plan, result, r = last_result
+        fixed = _repair_plan(plan, req)
+        if fixed:
+            fixed["rounds"] = r
+            return fixed
         return {"plan": plan, "validation": result, "rounds": r, "source": "llm-partial"}
     return None
 
@@ -462,6 +473,50 @@ def _slot_fit(poi: dict, start_min: int) -> tuple[int, int] | None:
     if e - s < int(poi["duration_h"] * 60 * 0.8):
         return None
     return s, e
+
+
+def _repair_plan(plan: dict, req: dict) -> dict | None:
+    """模型方案只差"重复景点/通行时间不够"时，用代码修掉，别让用户看兜底。
+
+    规则：同一天按开始时间排序 → 去掉重复景点 → 从 09:00 起按真实通行时间重排，
+    跨午餐时段（11:30–13:00）顺延到 13:00，超出开放时间或 22:00 的点直接丢弃。
+    """
+    seen: set[str] = set()
+    days = []
+    for d in plan.get("days") or []:
+        items = sorted((d.get("items") or []), key=lambda x: x.get("start") or "09:00")
+        kept, cursor, prev = [], None, None
+        for it in items:
+            pid = it.get("poi_id")
+            poi = tools.POI_BY_ID.get(pid)
+            if not poi or pid in seen:
+                continue
+            dur = int(poi["duration_h"] * 60)
+            oa, ob = constraints._open_range(poi["open"])
+            start = max(cursor or 0, oa, 9 * 60)
+            # 别跨午饭：11:30 前没结束就挪到 13:00
+            if start < 13 * 60 and start + dur > 11 * 60 + 30:
+                start = max(start, 13 * 60)
+            end = min(start + dur, ob)
+            if end - start < dur * 0.8 or end > 22 * 60:
+                continue
+            gap = tools.transit_minutes(prev, pid) if prev else 0
+            start = max(start, (cursor or 0) + gap)
+            end = min(start + dur, ob)
+            if end - start < dur * 0.8 or end > 22 * 60:
+                continue
+            kept.append({"poi_id": pid, "start": constraints._fmt(start), "end": constraints._fmt(end)})
+            seen.add(pid)
+            cursor, prev = end, pid
+        days.append({"date": d.get("date"), "weekday": d.get("weekday"), "items": kept,
+                     "lunch": d.get("lunch") or "", "note": d.get("note") or ""})
+    fixed = {"title": plan.get("title") or "广州 %d 日行程" % req["days"],
+             "summary": plan.get("summary") or "", "days": days}
+    result = constraints.validate(fixed, req)
+    if not result["ok"]:
+        return None
+    _annotate_lunch(fixed)
+    return {"plan": fixed, "validation": result, "source": "llm-repaired"}
 
 
 def plan_with_rules(req: dict) -> dict:
