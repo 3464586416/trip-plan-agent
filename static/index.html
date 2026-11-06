@@ -176,9 +176,9 @@ function render(d){
             (day.note ? '<small>' + esc(day.note) + '</small>' : '') + '</div>';
     const rows = (day.items||[]).map(it=>({
       start: it.start, end: it.end,
-      name: (d.pois[it.poi_id]||{}).name || it.poi_id,
-      dist: (d.pois[it.poi_id]||{}).district || '',
-      ticket: (d.pois[it.poi_id]||{}).ticket,
+      name: ((d.pois||{})[it.poi_id]||{}).name || it.poi_id,
+      dist: ((d.pois||{})[it.poi_id]||{}).district || '',
+      ticket: ((d.pois||{})[it.poi_id]||{}).ticket,
       note: it.note || ''
     }));
     if(day.lunch) rows.push({start: day.lunch.split('–')[0], lunch: true, name:'午餐（自行安排）', dist:'预算已计入'});

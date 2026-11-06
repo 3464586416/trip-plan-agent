@@ -157,6 +157,10 @@ def plan_task(tid: str):
     TASKS.pop(tid, None)
     out = {"ok": True, "status": "done", "progress": 100, "stage": "完成"}
     out.update(t["result"])
+    # 前端渲染景点名字/区域/门票要用这张表，同步接口里有、异步这里不能漏
+    out["pois"] = {p["id"]: {"name": p["name"], "district": p["district"], "ticket": p["ticket"],
+                             "indoor": p["indoor"], "open": p["open"]}
+                   for p in planner.tools.POIS}
     return out
 
 
